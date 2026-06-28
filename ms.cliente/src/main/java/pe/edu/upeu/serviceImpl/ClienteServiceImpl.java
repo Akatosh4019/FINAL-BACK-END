@@ -13,6 +13,8 @@ import java.util.List;
 @ApplicationScoped
 public class ClienteServiceImpl implements ClienteService {
 
+    private static final String ADMIN_CORREO = "admin@saga.local";
+
     @Inject
     ClienteRepository repository;
 
@@ -79,6 +81,10 @@ public class ClienteServiceImpl implements ClienteService {
         entity.setApellidos(cliente.getApellidos());
         entity.setCorreo(cliente.getCorreo());
         entity.setTelefono(cliente.getTelefono());
+        if (esClienteAdmin(entity) && !"A".equals(cliente.getEstado())) {
+            throw new BadRequestException("El cliente administrador no se puede desactivar");
+        }
+
         entity.setEstado(cliente.getEstado());
 
         return entity;
@@ -87,9 +93,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (!repository.deleteById(id)) {
-            throw new NotFoundException("Cliente no encontrado con id: " + id);
-        }
+        desactivar(id);
     }
     @Override
     @Transactional
@@ -99,6 +103,10 @@ public class ClienteServiceImpl implements ClienteService {
 
         if (c == null) {
             throw new NotFoundException("Cliente no encontrado con id: " + id);
+        }
+
+        if (esClienteAdmin(c)) {
+            throw new BadRequestException("El cliente administrador no se puede desactivar");
         }
 
         c.setEstado("I");
@@ -119,5 +127,9 @@ public class ClienteServiceImpl implements ClienteService {
         c.setEstado("A"); // 🔥 como es String
 
         return c;
+    }
+
+    private boolean esClienteAdmin(Cliente cliente) {
+        return cliente != null && ADMIN_CORREO.equalsIgnoreCase(cliente.getCorreo());
     }
 }

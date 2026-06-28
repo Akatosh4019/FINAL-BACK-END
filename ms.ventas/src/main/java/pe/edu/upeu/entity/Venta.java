@@ -15,6 +15,8 @@ public class Venta {
 
     private Long idproducto;
 
+    private String sagaId;
+
     private int cantidad;
 
     private double total;
@@ -35,6 +37,9 @@ public class Venta {
 
     public Long getIdproducto() { return idproducto; }
     public void setIdproducto(Long idproducto) { this.idproducto = idproducto; }
+
+    public String getSagaId() { return sagaId; }
+    public void setSagaId(String sagaId) { this.sagaId = sagaId; }
 
     public int getCantidad() { return cantidad; }
     public void setCantidad(int cantidad) { this.cantidad = cantidad; }

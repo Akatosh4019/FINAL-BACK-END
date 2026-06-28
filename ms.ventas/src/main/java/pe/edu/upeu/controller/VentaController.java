@@ -11,7 +11,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import pe.edu.upeu.dto.CarritoRequest;
+import pe.edu.upeu.dto.SagaCarritoResponse;
 import pe.edu.upeu.dto.SagaVentaResponse;
+import pe.edu.upeu.entity.SagaLog;
 import pe.edu.upeu.entity.Venta;
 import pe.edu.upeu.services.VentaService;
 
@@ -34,6 +37,12 @@ public class VentaController {
     @Path("/mis-ventas")
     public List<Venta> misVentas(@HeaderParam("X-Cliente-Id") Long idcliente) {
         return service.findByCliente(idcliente);
+    }
+
+    @GET
+    @Path("/saga-logs")
+    public List<SagaLog> sagaLogs() {
+        return service.findSagaLogs();
     }
 
     @GET
@@ -61,6 +70,15 @@ public class VentaController {
     ) {
         venta.setIdcliente(idcliente);
         return service.realizarVentaSaga(venta);
+    }
+
+    @POST
+    @Path("/saga/carrito/cliente")
+    public SagaCarritoResponse realizarVentaSagaCarritoCliente(
+            @HeaderParam("X-Cliente-Id") Long idcliente,
+            CarritoRequest request
+    ) {
+        return service.realizarVentaSagaCarrito(idcliente, request);
     }
 
     @PUT

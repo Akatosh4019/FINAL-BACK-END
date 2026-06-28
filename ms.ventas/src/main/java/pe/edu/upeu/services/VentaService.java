@@ -1,6 +1,9 @@
 package pe.edu.upeu.services;
 
 import pe.edu.upeu.entity.Venta;
+import pe.edu.upeu.entity.SagaLog;
+import pe.edu.upeu.dto.CarritoRequest;
+import pe.edu.upeu.dto.SagaCarritoResponse;
 import pe.edu.upeu.dto.SagaVentaResponse;
 import java.util.List;
 
@@ -10,9 +13,13 @@ public interface VentaService {
 
     SagaVentaResponse realizarVentaSaga(Venta venta);
 
+    SagaCarritoResponse realizarVentaSagaCarrito(Long idcliente, CarritoRequest request);
+
     List<Venta> findAll();
 
     List<Venta> findByCliente(Long idcliente);
+
+    List<SagaLog> findSagaLogs();
 
     Venta findById(Long id);
 
