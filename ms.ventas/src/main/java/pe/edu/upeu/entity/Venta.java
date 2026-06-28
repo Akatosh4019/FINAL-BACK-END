@@ -2,10 +2,12 @@ package pe.edu.upeu.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "venta")
 public class Venta {
+    private static final ZoneId ZONA_LIMA = ZoneId.of("America/Lima");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +28,7 @@ public class Venta {
     private LocalDateTime fecha;
 
     public Venta() {
-        this.fecha = LocalDateTime.now();
+        this.fecha = LocalDateTime.now(ZONA_LIMA);
     }
 
     public Long getIdventa() { return idventa; }
