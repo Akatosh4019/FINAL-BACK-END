@@ -179,11 +179,7 @@ Endpoints principales:
 
 Aplicado sobre consultas a cliente/producto. Sirve para tolerar fallos y responder de forma controlada si un servicio no esta disponible.
 
-Recordatorio de evidencia:
-
-- Sacar captura del codigo en `VentaServiceImpl` donde aparecen `@CircuitBreaker`, `@Fallback` y `@Timeout`.
-- Sacar captura de una prueba deteniendo un servicio dependiente.
-- Sacar captura del resultado del fallback o error controlado.
+Evidencia generada en `docs/20_EVIDENCIAS_PRUEBAS.md`: codigo con `@CircuitBreaker`, `@Fallback`, `@Timeout`, prueba con `ms-cliente` detenido y respuesta controlada de la Saga.
 
 ## Balanceo de Carga
 
@@ -194,12 +190,7 @@ El balanceo se evidencia con dos instancias de producto:
 
 Ambas se registran en Consul con el mismo nombre logico `ms-producto`.
 
-Recordatorio de evidencia:
-
-- Sacar captura de Docker con ambas instancias.
-- Sacar captura de Consul mostrando `ms-producto-1` y `ms-producto-2`.
-- Probar varias llamadas a `/api/productos` o endpoints de producto.
-- Explicar que el gateway usa `lb://ms-producto`.
+Evidencia generada en `docs/20_EVIDENCIAS_PRUEBAS.md`: Docker y Consul muestran dos instancias saludables de `ms-producto`. En la sustentacion se explica el uso del nombre logico del servicio para enrutar peticiones.
 
 ## Postman
 
@@ -262,4 +253,6 @@ El usuario tiene token valido, pero no tiene permiso para la ruta.
 ### Error 409 en compra
 
 La Saga rechazo la compra por regla funcional: stock insuficiente, cliente inactivo u otro conflicto.
+
+
 

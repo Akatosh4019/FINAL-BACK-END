@@ -1,4 +1,4 @@
-# Diagramas C4
+﻿# Diagramas C4
 
 ## Nota Tecnica
 
@@ -209,10 +209,11 @@ sequenceDiagram
     V->>DB: Registrar saga_log FALLIDA
 ```
 
-## Evidencias Recomendadas
+## Evidencias del Modelado
 
 - Captura del PDF C4 generado.
 - Captura de Consul con servicios registrados.
 - Captura del flujo Saga exitosa en Postman.
 - Captura de Saga fallida y `saga-logs`.
+
 

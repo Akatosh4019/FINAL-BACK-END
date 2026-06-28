@@ -1,4 +1,4 @@
-# API REST Documentada
+﻿# API REST Documentada
 
 ## URL Base
 
@@ -413,7 +413,7 @@ Response:
 - `409`: conflicto funcional, por ejemplo compra no completada.
 - `500`: error interno no controlado.
 
-## Evidencias Recomendadas
+## Evidencias de Prueba de API
 
 - Captura de Postman importando coleccion.
 - Captura de login exitoso.
@@ -422,4 +422,5 @@ Response:
 - Captura de Saga fallida por stock.
 - Captura de Saga fallida por cliente inactivo.
 - Captura de `GET /api/ventas/saga-logs`.
+
 

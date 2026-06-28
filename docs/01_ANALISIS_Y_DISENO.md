@@ -1,4 +1,4 @@
-# Documento de Analisis y Diseno
+﻿# Documento de Analisis y Diseno
 
 ## Proyecto
 
@@ -183,14 +183,8 @@ Flujo:
 - Una venta solo se registra si cliente y stock son validos.
 - La compensacion de stock se ejecuta si el error ocurre despues de descontar stock.
 
-## Evidencias Sugeridas
+## Evidencias del Proyecto
 
-- Captura de login.
-- Captura de servicios en Docker.
-- Captura de Consul con servicios registrados.
-- Captura de Postman con Saga exitosa.
-- Captura de Postman con error por stock.
-- Captura de Postman con cliente inactivo.
-- Captura de `saga-logs`.
-- Captura de gateway usando rutas `/api`.
+Las evidencias de ejecucion, pruebas funcionales, pruebas de Saga, registro en Consul, API Gateway, seguridad JWT, resiliencia, balanceo de carga y frontend se documentan en:
 
+`docs/20_EVIDENCIAS_PRUEBAS.md`

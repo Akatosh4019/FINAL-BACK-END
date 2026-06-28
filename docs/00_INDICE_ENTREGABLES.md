@@ -12,13 +12,14 @@ Este documento sirve como mapa rapido para ubicar los entregables principales de
 | Manual tecnico | `docs/17_MANUAL_TECNICO.md` |
 | Manual de usuario | `docs/18_MANUAL_USUARIO.md` |
 | Guia para video de sustentacion | `docs/19_GUIA_VIDEO_SUSTENTACION.md` |
+| Evidencias de pruebas y ejecucion | `docs/20_EVIDENCIAS_PRUEBAS.md` |
 | Contexto para el chat de frontend | `docs/FRONTEND_CHECKLIST_PARA_CHAT.md` |
 
-## Recordatorio importante
+## Nota tecnica importante
 
 El proyecto usa Quarkus en los microservicios y Consul para registro/descubrimiento. Esto es valido porque el docente permitio mantener Quarkus y aceptar Consul como alternativa a Eureka/Spring Cloud del enunciado base.
 
-## Capturas recomendadas para la sustentacion
+## Capturas para la sustentacion
 
 1. Docker Desktop o `docker compose ps` con todos los contenedores levantados.
 2. Consul UI mostrando servicios registrados: gateway, auth, cliente, producto, ventas.
@@ -33,7 +34,7 @@ El proyecto usa Quarkus en los microservicios y Consul para registro/descubrimie
 11. Balanceo de carga con dos instancias de producto.
 12. Frontend: login admin, login cliente, carrito, compra exitosa, error de compra y panel admin.
 
-## Orden sugerido de exposicion
+## Orden de exposicion
 
 1. Problema de consistencia distribuida.
 2. Arquitectura general con microservicios.
@@ -45,3 +46,6 @@ El proyecto usa Quarkus en los microservicios y Consul para registro/descubrimie
 8. Balanceo de carga en producto.
 9. Frontend consumiendo el backend.
 10. Pruebas y cierre.
+
+
+

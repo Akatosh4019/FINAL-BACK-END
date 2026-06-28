@@ -82,7 +82,7 @@ Mostrar:
 - Servicios registrados.
 - Especialmente `ms-producto` con dos instancias.
 
-Recordatorio:
+Nota para sustentar:
 
 - Esta captura sirve para registro/descubrimiento y balanceo de carga.
 
@@ -213,9 +213,9 @@ Capturar:
 - `@Fallback`
 - `@Timeout`
 
-Recordatorio:
+Nota para sustentar:
 
-- Sacar captura de esto para el entregable 10.
+- Esta evidencia corresponde al entregable 10 de resiliencia.
 
 ### 14. Balanceo de Carga
 
@@ -226,9 +226,9 @@ Mostrar:
 - Consul con dos instancias.
 - Gateway usando `lb://ms-producto`.
 
-Recordatorio:
+Nota para sustentar:
 
-- Sacar captura para el entregable 11.
+- Esta evidencia corresponde al entregable 11 de balanceo de carga.
 
 ### 15. Frontend
 
@@ -265,4 +265,5 @@ El sistema demuestra microservicios independientes, seguridad JWT, API Gateway, 
 - Codigo de CircuitBreaker/Fallback/Timeout.
 - Dos instancias de producto para balanceo.
 - Frontend login/dashboard/carrito.
+
 

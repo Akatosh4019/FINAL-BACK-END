@@ -101,6 +101,12 @@ public class VentaServiceImpl implements VentaService {
     @Override
     @Transactional
     public SagaVentaResponse realizarVentaSaga(Venta venta) {
+        return realizarVentaSaga(venta, false);
+    }
+
+    @Override
+    @Transactional
+    public SagaVentaResponse realizarVentaSaga(Venta venta, boolean simularFalloDespuesDescuento) {
         String sagaId = UUID.randomUUID().toString();
         boolean stockDescontado = false;
         boolean stockCompensado = false;
@@ -130,6 +136,11 @@ public class VentaServiceImpl implements VentaService {
             productoClient.descontarStock(venta.getIdproducto(), venta.getCantidad());
             stockDescontado = true;
             LOG.infof("SAGA %s | PASO 3 OK | Stock descontado", sagaId);
+
+            if (simularFalloDespuesDescuento) {
+                pasoActual = "ERROR_SIMULADO_POST_DESCUENTO";
+                throw new BadRequestException("Error simulado despues de descontar stock para probar compensacion Saga");
+            }
 
             pasoActual = "REGISTRAR_VENTA";
             LOG.infof("SAGA %s | PASO 4 | Registrando venta", sagaId);
@@ -363,6 +374,10 @@ public class VentaServiceImpl implements VentaService {
     }
 
     private String mensajeClienteError(String pasoActual, String detalle) {
+        if ("ERROR_SIMULADO_POST_DESCUENTO".equals(pasoActual)) {
+            return "No se pudo completar tu compra. Intenta nuevamente.";
+        }
+
         if ("VALIDAR_CLIENTE".equals(pasoActual)) {
             return "Tu cuenta de cliente esta inactiva. No puedes realizar compras.";
         }

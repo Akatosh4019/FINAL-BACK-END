@@ -13,6 +13,8 @@ public interface VentaService {
 
     SagaVentaResponse realizarVentaSaga(Venta venta);
 
+    SagaVentaResponse realizarVentaSaga(Venta venta, boolean simularFalloDespuesDescuento);
+
     SagaCarritoResponse realizarVentaSagaCarrito(Long idcliente, CarritoRequest request);
 
     List<Venta> findAll();
