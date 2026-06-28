@@ -48,7 +48,7 @@ PUT /api/productos/{id}
 PUT /api/productos/{id}/activar
 PUT /api/productos/{id}/desactivar
 PUT /api/productos/{id}/aumentar/{cantidad}
-DELETE /api/productos/{id}
+DELETE /api/productos/{id}  -> desactiva producto, no borra fisicamente
 
 Clientes:
 GET /api/clientes
@@ -124,4 +124,5 @@ Necesito que revises si el frontend cumple:
 
 Tambien dime que capturas debo sacar para evidencias del entregable Frontend e Integracion Frontend-Backend.
 ```
+
 

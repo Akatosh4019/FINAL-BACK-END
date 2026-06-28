@@ -1,4 +1,4 @@
-﻿{
+{
   "info": {
     "_postman_id": "00f76215-7508-4c1a-9c86-8ff056f6fb18",
     "name": "Proyecto Quarkus - Gateway, CRUD y Saga",
@@ -172,7 +172,7 @@
           "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "http://localhost:8030/api/productos/{{producto_id}}/activar", "host": ["http://localhost:8030"], "path": ["api", "productos", "{{producto_id}}", "activar"] } }
         },
         {
-          "name": "Eliminar producto",
+          "name": "Desactivar producto por DELETE (no borra fisico)",
           "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "http://localhost:8030/api/productos/{{producto_id}}", "host": ["http://localhost:8030"], "path": ["api", "productos", "{{producto_id}}"] } }
         }
       ]
@@ -329,4 +329,5 @@
     }
   ]
 }
+
 

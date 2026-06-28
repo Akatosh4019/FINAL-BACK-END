@@ -1,4 +1,4 @@
-﻿# API REST Documentada
+# API REST Documentada
 
 ## URL Base
 
@@ -252,11 +252,13 @@ PUT /api/productos/{id}/descontar-stock/{cantidad}
 PUT /api/productos/{id}/restaurar-stock/{cantidad}
 ```
 
-### Eliminar producto
+### Desactivar producto por DELETE
 
 ```http
 DELETE /api/productos/{id}
 ```
+
+No elimina fisicamente el registro. Cambia el producto a `estado = "I"` para conservar historial de ventas y boletas.
 
 ## Ventas
 
@@ -422,5 +424,6 @@ Response:
 - Captura de Saga fallida por stock.
 - Captura de Saga fallida por cliente inactivo.
 - Captura de `GET /api/ventas/saga-logs`.
+
 
 

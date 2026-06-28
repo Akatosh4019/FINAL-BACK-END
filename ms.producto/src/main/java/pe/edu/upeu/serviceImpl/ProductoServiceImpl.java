@@ -53,11 +53,8 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional
-    public void delete(Long id) {
-
-        if (!repository.deleteById(id)) {
-            throw new NotFoundException("Producto no encontrado con id: " + id);
-        }
+    public Producto delete(Long id) {
+        return desactivar(id);
     }
 
     @Override

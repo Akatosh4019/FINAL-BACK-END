@@ -56,8 +56,8 @@ public class ProductoController {
 
     @DELETE
     @Path("/{id}")
-    public void delete(@PathParam("id") Long id) {
-        service.delete(id);
+    public Producto delete(@PathParam("id") Long id) {
+        return service.delete(id);
     }
 
     @PUT
