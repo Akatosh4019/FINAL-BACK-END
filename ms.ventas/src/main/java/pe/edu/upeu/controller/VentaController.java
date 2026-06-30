@@ -41,6 +41,12 @@ public class VentaController {
     }
 
     @GET
+    @Path("/producto/{idproducto}/conteo")
+    public long countByProducto(@PathParam("idproducto") Long idproducto) {
+        return service.countByProducto(idproducto);
+    }
+
+    @GET
     @Path("/saga-logs")
     public List<SagaLog> sagaLogs() {
         return service.findSagaLogs();
@@ -97,3 +103,4 @@ public class VentaController {
         service.delete(id);
     }
 }
+

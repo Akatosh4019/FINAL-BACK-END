@@ -416,6 +416,15 @@ public class VentaServiceImpl implements VentaService {
     }
 
     @Override
+    public long countByProducto(Long idproducto) {
+        if (idproducto == null) {
+            throw new BadRequestException("El producto es obligatorio");
+        }
+
+        return repository.countByProducto(idproducto);
+    }
+
+    @Override
     public List<SagaLog> findSagaLogs() {
         return sagaLogService.findAll();
     }
@@ -467,3 +476,4 @@ public class VentaServiceImpl implements VentaService {
         }
     }
 }
+

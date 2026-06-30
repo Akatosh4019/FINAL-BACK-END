@@ -21,6 +21,8 @@ public interface VentaService {
 
     List<Venta> findByCliente(Long idcliente);
 
+    long countByProducto(Long idproducto);
+
     List<SagaLog> findSagaLogs();
 
     Venta findById(Long id);
@@ -29,3 +31,4 @@ public interface VentaService {
 
     void delete(Long id);
 }
+

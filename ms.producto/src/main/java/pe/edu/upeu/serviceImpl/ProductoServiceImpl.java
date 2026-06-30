@@ -3,7 +3,10 @@ package pe.edu.upeu.serviceImpl;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.WebApplicationException;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
+import pe.edu.upeu.client.VentaClient;
 import pe.edu.upeu.entity.Producto;
 import pe.edu.upeu.errors.BadRequestException;
 import pe.edu.upeu.errors.ConflictException;
@@ -20,6 +23,10 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Inject
     ProductoRepository repository;
+
+    @Inject
+    @RestClient
+    VentaClient ventaClient;
 
     @Override
     @Transactional
@@ -54,7 +61,17 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional
     public Producto delete(Long id) {
-        return desactivar(id);
+        Producto producto = findById(id);
+        long ventasAsociadas = contarVentasAsociadas(id);
+
+        if (ventasAsociadas > 0) {
+            throw new ConflictException(
+                    "No se puede eliminar el producto porque ya tiene ventas registradas. Puedes editarlo o desactivarlo."
+            );
+        }
+
+        repository.delete(producto);
+        return producto;
     }
 
     @Override
@@ -148,4 +165,15 @@ public class ProductoServiceImpl implements ProductoService {
 
         return p;
     }
+
+    private long contarVentasAsociadas(Long idproducto) {
+        try {
+            return ventaClient.countByProducto(idproducto);
+        } catch (WebApplicationException ex) {
+            throw new ConflictException("No se pudo validar si el producto tiene ventas asociadas");
+        } catch (RuntimeException ex) {
+            throw new ConflictException("No se pudo validar si el producto tiene ventas asociadas");
+        }
+    }
 }
+

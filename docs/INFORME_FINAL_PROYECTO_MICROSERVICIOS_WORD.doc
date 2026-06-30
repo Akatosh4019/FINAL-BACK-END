@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Informe Final - Sistema de Ventas con Microservicios</title>
+<style>
+  body { font-family: Calibri, Arial, sans-serif; color:#0f172a; line-height:1.35; margin: 42px; }
+  h1 { color:#0b1f3a; font-size:30px; border-bottom:4px solid #0ea5e9; padding-bottom:8px; }
+  h2 { color:#12355b; font-size:22px; margin-top:28px; border-bottom:1px solid #cbd5e1; padding-bottom:4px; }
+  h3 { color:#155e75; font-size:17px; margin-top:20px; }
+  p { font-size:11.5pt; }
+  table { border-collapse:collapse; width:100%; margin:10px 0 18px 0; font-size:10.5pt; }
+  th { background:#0f2742; color:white; padding:7px; border:1px solid #94a3b8; text-align:left; }
+  td { padding:7px; border:1px solid #cbd5e1; vertical-align:top; }
+  .cover { text-align:center; padding-top:120px; }
+  .cover h1 { border:none; font-size:34px; color:#0f172a; }
+  .subtitle { color:#0e7490; font-weight:bold; font-size:18px; }
+  .muted { color:#475569; }
+  .badge { display:inline-block; background:#dff7ef; color:#047857; padding:3px 8px; border-radius:12px; font-weight:bold; }
+  .note { background:#f0f9ff; border-left:5px solid #0284c7; padding:10px; margin:12px 0; }
+  .warning { background:#fff7ed; border-left:5px solid #f97316; padding:10px; margin:12px 0; }
+  .fig { text-align:center; margin:14px 0 26px 0; page-break-inside:avoid; }
+  .fig img { max-width: 96%; border:1px solid #cbd5e1; }
+  .caption { font-size:10pt; color:#334155; font-style:italic; margin-top:5px; }
+  .code { background:#0f172a; color:#e2e8f0; padding:12px; font-family:Consolas, monospace; font-size:9.5pt; white-space:pre-wrap; }
+  .pagebreak { page-break-before:always; }
+  .diagram { border:1px solid #94a3b8; padding:14px; margin:12px 0; background:#f8fafc; }
+  .box { display:inline-block; border:1px solid #0ea5e9; background:white; padding:8px 10px; margin:6px; border-radius:6px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Sistema de Ventas con Microservicios</h1>
+  <div class="subtitle">Quarkus, Docker, Consul, API Gateway, JWT y Saga Pattern</div>
+  <p class="muted">Informe final basado en la implementacion real del proyecto</p>
+  <br><br>
+  <p><b>Autor:</b> Samuel Valencia</p>
+  <p><b>Backend:</b> FINAL-BACK-END</p>
+  <p><b>Frontend:</b> FINAL-FRONT-END</p>
+  <p><b>Fecha:</b> Junio 2026</p>
+</div>
+
+<div class="pagebreak"></div>
+
+<h1>Informe Final del Proyecto</h1>
+
+<h2>1. Resumen Ejecutivo</h2>
+<p>El proyecto implementa un sistema distribuido de ventas basado en microservicios. La arquitectura mantiene servicios independientes para autenticacion, clientes, productos y ventas, todos desplegados en contenedores Docker y registrados en Consul para descubrimiento de servicios.</p>
+<p>La operacion principal del sistema es la realizacion de una venta mediante el patron <b>Saga Orchestration</b>, donde <b>ms-ventas</b> coordina el flujo completo: validacion del cliente, validacion del producto, descuento de stock y registro de venta. Si ocurre un error despues del descuento de stock, se ejecuta una compensacion para restaurar el stock.</p>
+<p>El sistema tambien incluye seguridad con JWT, API Gateway centralizado, auditoria de Saga logs, manejo de errores funcionales, balanceo mediante dos instancias de <b>ms-producto</b>, y un frontend Angular para cliente y administrador.</p>
+
+<h2>2. Descripcion del Problema</h2>
+<p>En una arquitectura de microservicios cada servicio posee responsabilidades y datos propios. Esto mejora la separacion de responsabilidades, pero introduce un reto: mantener la consistencia entre operaciones distribuidas.</p>
+<p>En el caso de una venta, el sistema debe consultar clientes, productos, stock y finalmente registrar una venta. Si una parte falla despues del descuento de stock, el sistema podria quedar inconsistente. Por esta razon se implemento Saga Pattern con compensacion.</p>
+
+<table>
+  <tr><th>Paso</th><th>Servicio</th><th>Responsabilidad</th></tr>
+  <tr><td>1</td><td>ms-ventas</td><td>Iniciar y coordinar la Saga</td></tr>
+  <tr><td>2</td><td>ms-cliente</td><td>Validar que el cliente exista y este activo</td></tr>
+  <tr><td>3</td><td>ms-producto</td><td>Validar producto y stock disponible</td></tr>
+  <tr><td>4</td><td>ms-producto</td><td>Descontar stock</td></tr>
+  <tr><td>5</td><td>ms-ventas</td><td>Registrar la venta</td></tr>
+  <tr><td>Compensacion</td><td>ms-ventas + ms-producto</td><td>Restaurar stock si ocurre un error posterior al descuento</td></tr>
+</table>
+
+<h2>3. Justificacion de Decisiones Tecnicas</h2>
+<table>
+  <tr><th>Decision</th><th>Justificacion</th></tr>
+  <tr><td>Mantener Quarkus</td><td>El proyecto ya estaba implementado con Quarkus y el requisito indicaba no cambiar la tecnologia base.</td></tr>
+  <tr><td>Usar REST Client</td><td>Permite comunicacion sincrona entre microservicios sin introducir Kafka ni RabbitMQ.</td></tr>
+  <tr><td>Saga Orchestration</td><td>ms-ventas centraliza el flujo de venta y puede ejecutar compensaciones.</td></tr>
+  <tr><td>Consul</td><td>Permite registrar servicios y evidenciar service discovery.</td></tr>
+  <tr><td>API Gateway</td><td>Centraliza las rutas externas y evita exponer cada microservicio al usuario final.</td></tr>
+  <tr><td>JWT</td><td>Protege endpoints administrativos y permite diferenciar roles.</td></tr>
+  <tr><td>No eliminar clientes fisicamente</td><td>Los clientes estan asociados a usuarios y ventas; se usa activacion/desactivacion.</td></tr>
+  <tr><td>Eliminar productos solo sin ventas</td><td>Conserva trazabilidad de boletas e historial de compras.</td></tr>
+</table>
+
+<h2>4. Objetivos</h2>
+<h3>Objetivo General</h3>
+<p>Implementar un sistema de ventas distribuido con microservicios en Quarkus, incorporando Saga Pattern para mantener consistencia de stock y ventas ante fallos.</p>
+<h3>Objetivos Especificos</h3>
+<ul>
+  <li>Implementar autenticacion y autorizacion con JWT.</li>
+  <li>Centralizar el acceso mediante API Gateway.</li>
+  <li>Registrar servicios en Consul.</li>
+  <li>Implementar CRUD de clientes y productos.</li>
+  <li>Implementar venta coordinada con Saga Orchestration.</li>
+  <li>Implementar compensacion de stock ante errores.</li>
+  <li>Registrar logs de Saga para auditoria.</li>
+  <li>Probar errores funcionales como cliente inactivo y stock insuficiente.</li>
+  <li>Implementar frontend Angular para administrador y cliente.</li>
+</ul>
+
+<h2>5. Alcance</h2>
+<p>El sistema cubre autenticacion, gestion de clientes, gestion de productos, ventas, compras mediante Saga, carrito de compras, panel administrativo, auditoria Saga, despliegue dockerizado y descubrimiento de servicios con Consul. No se implementan pagos reales externos por tratarse de un proyecto academico.</p>
+
+<h2>6. Requerimientos Funcionales</h2>
+<table>
+  <tr><th>Codigo</th><th>Requerimiento</th><th>Estado</th></tr>
+  <tr><td>RF-01</td><td>Login con JWT</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-02</td><td>Registrar cliente junto a usuario</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-03</td><td>Listar, actualizar, activar y desactivar clientes</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-04</td><td>Crear, listar, actualizar, activar, desactivar y eliminar productos permitidos</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-05</td><td>Bloquear eliminacion de productos con ventas</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-06</td><td>Realizar venta con Saga</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-07</td><td>Validar cliente activo</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-08</td><td>Validar stock disponible</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-09</td><td>Restaurar stock ante fallo posterior al descuento</td><td><span class="badge">Implementado</span></td></tr>
+  <tr><td>RF-10</td><td>Registrar Saga logs</td><td><span class="badge">Implementado</span></td></tr>
+</table>
+
+<h2>7. Requerimientos No Funcionales</h2>
+<table>
+  <tr><th>Codigo</th><th>Requerimiento</th><th>Implementacion</th></tr>
+  <tr><td>RNF-01</td><td>Seguridad</td><td>JWT con roles</td></tr>
+  <tr><td>RNF-02</td><td>Disponibilidad</td><td>Servicios dockerizados</td></tr>
+  <tr><td>RNF-03</td><td>Descubrimiento</td><td>Consul</td></tr>
+  <tr><td>RNF-04</td><td>Resiliencia</td><td>Circuit Breaker, Fallback y Timeout</td></tr>
+  <tr><td>RNF-05</td><td>Trazabilidad</td><td>Saga logs</td></tr>
+  <tr><td>RNF-06</td><td>Escalabilidad</td><td>Dos instancias de ms-producto</td></tr>
+  <tr><td>RNF-07</td><td>Consistencia eventual</td><td>Saga con compensacion</td></tr>
+</table>
+
+<h2>8. Casos de Uso</h2>
+<table>
+  <tr><th>Caso de Uso</th><th>Actor</th><th>Descripcion</th></tr>
+  <tr><td>CU-01 Login</td><td>Administrador / Cliente</td><td>Iniciar sesion y recibir token JWT.</td></tr>
+  <tr><td>CU-02 Gestionar clientes</td><td>Administrador</td><td>Listar, actualizar, activar y desactivar clientes.</td></tr>
+  <tr><td>CU-03 Gestionar productos</td><td>Administrador</td><td>Crear, listar, actualizar, activar, desactivar y eliminar productos permitidos.</td></tr>
+  <tr><td>CU-04 Comprar producto</td><td>Cliente</td><td>Realizar compra usando Saga.</td></tr>
+  <tr><td>CU-05 Ver ventas</td><td>Administrador</td><td>Consultar ventas globales.</td></tr>
+  <tr><td>CU-06 Ver Saga logs</td><td>Administrador</td><td>Auditar ventas exitosas y fallidas.</td></tr>
+  <tr><td>CU-07 Ver mis compras</td><td>Cliente</td><td>Consultar historial personal.</td></tr>
+</table>
+
+<h2>9. Historias de Usuario</h2>
+<table>
+  <tr><th>Historia</th><th>Descripcion</th><th>Criterio de Aceptacion</th></tr>
+  <tr><td>HU-01</td><td>Como administrador quiero iniciar sesion para gestionar el sistema.</td><td>El sistema retorna JWT con rol ROLE_ADMIN.</td></tr>
+  <tr><td>HU-02</td><td>Como cliente quiero crear cuenta para comprar productos.</td><td>Se crea usuario y cliente asociado.</td></tr>
+  <tr><td>HU-03</td><td>Como cliente quiero comprar productos disponibles.</td><td>La venta se registra y se descuenta stock.</td></tr>
+  <tr><td>HU-04</td><td>Como cliente quiero recibir mensaje si no hay stock.</td><td>Se muestra error controlado.</td></tr>
+  <tr><td>HU-05</td><td>Como administrador quiero ver logs de Saga.</td><td>Se listan errores, pasos fallidos y compensaciones.</td></tr>
+  <tr><td>HU-06</td><td>Como administrador quiero evitar borrar productos vendidos.</td><td>El sistema bloquea eliminacion con HTTP 409.</td></tr>
+</table>
+
+<h2>10. Diagramas C4</h2>
+<h3>Nivel 1: Contexto</h3>
+<div class="diagram">
+  <span class="box">Cliente</span> →
+  <span class="box">Sistema Saga Store</span> ←
+  <span class="box">Administrador</span><br>
+  <span class="box">GitHub</span> ← versionamiento del codigo
+</div>
+
+<h3>Nivel 2: Contenedores</h3>
+<div class="diagram">
+  <span class="box">Frontend Angular</span> →
+  <span class="box">api-gateway</span> →
+  <span class="box">ms-auth</span>
+  <span class="box">ms-cliente</span>
+  <span class="box">ms-producto</span>
+  <span class="box">ms-producto-2</span>
+  <span class="box">ms-ventas</span><br>
+  <span class="box">Consul</span>
+  <span class="box">BD Auth</span>
+  <span class="box">BD Cliente</span>
+  <span class="box">BD Producto</span>
+  <span class="box">BD Ventas</span>
+</div>
+
+<h3>Nivel 3: Componentes de ms-ventas</h3>
+<div class="diagram">
+  <span class="box">VentaController</span> →
+  <span class="box">VentaServiceImpl</span> →
+  <span class="box">VentaRepository</span><br>
+  <span class="box">SagaLogServiceImpl</span> →
+  <span class="box">SagaLogRepository</span><br>
+  <span class="box">ClienteClient</span>
+  <span class="box">ProductoClient</span>
+</div>
+
+<h3>Nivel 4: Codigo Relevante</h3>
+<div class="code">@CircuitBreaker(
+    requestVolumeThreshold = 4,
+    failureRatio = 0.5,
+    delay = 5000
+)
+@Fallback(fallbackMethod = "fallbackProducto")
+@Timeout(3000)
+public ProductoDTO obtenerProducto(Long id) {
+    return productoClient.buscarProductoPorId(id);
+}</div>
+
+<h2>11. Microservicios Implementados</h2>
+<table>
+  <tr><th>Microservicio</th><th>Responsabilidad</th><th>Puerto</th></tr>
+  <tr><td>api-gateway</td><td>Entrada centralizada</td><td>8030</td></tr>
+  <tr><td>ms-auth</td><td>Login, JWT, usuarios y roles</td><td>8084</td></tr>
+  <tr><td>ms-cliente</td><td>Gestion y validacion de clientes</td><td>8082</td></tr>
+  <tr><td>ms-producto</td><td>Productos y stock</td><td>8080</td></tr>
+  <tr><td>ms-producto-2</td><td>Segunda instancia de productos</td><td>8085</td></tr>
+  <tr><td>ms-ventas</td><td>Ventas, Saga y auditoria</td><td>8083</td></tr>
+  <tr><td>Consul</td><td>Registro y descubrimiento</td><td>8500</td></tr>
+</table>
+
+<h2>12. API REST Documentada</h2>
+<table>
+  <tr><th>Modulo</th><th>Metodo</th><th>Ruta</th><th>Descripcion</th></tr>
+  <tr><td>Auth</td><td>POST</td><td>/api/auth/login</td><td>Login y generacion de JWT</td></tr>
+  <tr><td>Clientes</td><td>GET</td><td>/api/clientes</td><td>Listar clientes</td></tr>
+  <tr><td>Clientes</td><td>PUT</td><td>/api/clientes/{id}</td><td>Actualizar cliente</td></tr>
+  <tr><td>Clientes</td><td>PUT</td><td>/api/clientes/{id}/activar</td><td>Activar cliente</td></tr>
+  <tr><td>Clientes</td><td>PUT</td><td>/api/clientes/{id}/desactivar</td><td>Desactivar cliente</td></tr>
+  <tr><td>Productos</td><td>POST</td><td>/api/productos</td><td>Crear producto</td></tr>
+  <tr><td>Productos</td><td>GET</td><td>/api/productos</td><td>Listar productos</td></tr>
+  <tr><td>Productos</td><td>PUT</td><td>/api/productos/{id}</td><td>Actualizar producto</td></tr>
+  <tr><td>Productos</td><td>DELETE</td><td>/api/productos/{id}</td><td>Eliminar producto solo si no tiene ventas</td></tr>
+  <tr><td>Ventas</td><td>GET</td><td>/api/ventas</td><td>Listar ventas</td></tr>
+  <tr><td>Saga</td><td>POST</td><td>/api/ventas/saga</td><td>Ejecutar venta Saga</td></tr>
+  <tr><td>Saga</td><td>POST</td><td>/api/ventas/saga/carrito/cliente</td><td>Compra cliente por carrito</td></tr>
+  <tr><td>Saga</td><td>GET</td><td>/api/ventas/saga-logs</td><td>Listar auditoria Saga</td></tr>
+</table>
+
+<h2>13. Evidencias de Implementacion</h2>
+
+<h3>13.1 Docker</h3>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-d549c25f-e989-4c96-a9bc-4601bc3d6fa1.png"><div class="caption">Figura 1. Contenedores del proyecto ejecutandose en Docker Desktop.</div></div>
+
+<h3>13.2 Consul y Service Discovery</h3>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-3c55917f-27b9-42f9-b334-c4af2c0063f5.png"><div class="caption">Figura 2. Servicios registrados en Consul.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-4cfe9b34-768f-4d21-b95b-2748b0423753.png"><div class="caption">Figura 3. ms-producto con dos instancias registradas.</div></div>
+
+<h3>13.3 Seguridad JWT</h3>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-a9d2ee66-45eb-4c9b-9ea5-38c46bafe482.png"><div class="caption">Figura 4. Login admin por API Gateway con token JWT.</div></div>
+
+<h3>13.4 CRUD Clientes</h3>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-3ba089c2-47e6-4b1b-b3d2-b2ba4f2d3db4.png"><div class="caption">Figura 5. Listado de clientes por gateway.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-a4bf8f0c-d52e-4d95-9f02-ba45b8efbbba.png"><div class="caption">Figura 6. Actualizacion de cliente.</div></div>
+
+<h3>13.5 CRUD Productos</h3>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-74ac4de1-5867-4603-91f8-3be273168d0f.png"><div class="caption">Figura 7. Creacion de producto.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-5e2cc350-5980-4022-83e8-0423b4adf19b.png"><div class="caption">Figura 8. Listado de productos.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-cee15dd6-e585-43a2-bf3d-35f4a8cda0ed.png"><div class="caption">Figura 9. Bloqueo de eliminacion de producto con ventas.</div></div>
+
+<h3>13.6 Ventas y Saga</h3>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-072c9aa2-3c78-4ad6-a985-e1352a5fc52e.png"><div class="caption">Figura 10. Listado de ventas.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-5b0e078c-04c1-4f86-99d9-77aad4abb599.png"><div class="caption">Figura 11. Venta Saga exitosa.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-005e609e-9217-46bd-b873-347d1f54ef05.png"><div class="caption">Figura 12. Error controlado por stock insuficiente.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-df247cbc-fa45-4922-a5df-872ccc513b36.png"><div class="caption">Figura 13. Error controlado por cliente inactivo.</div></div>
+
+<h3>13.7 Compensacion Saga</h3>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-4c9b47ca-7a37-4fb0-b89c-fd956b4225af.png"><div class="caption">Figura 14. Stock antes de compensacion.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-3bcc9ec4-d7be-4b8a-a3a5-4c6f326d70d1.png"><div class="caption">Figura 15. Error simulado despues del descuento.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-c596542c-22d0-497e-b61d-7c2792331c85.png"><div class="caption">Figura 16. Stock restaurado luego de la compensacion.</div></div>
+
+<h3>13.8 Saga Logs y Resiliencia</h3>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-261a8b3c-153d-43e2-9c43-b3b99a6f3fb4.png"><div class="caption">Figura 17. Saga logs desde Postman.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-1a383005-090c-4da5-9c19-ef7ef1d9c0d3.png"><div class="caption">Figura 18. Codigo con Circuit Breaker, Fallback y Timeout.</div></div>
+
+<h2>14. Frontend Angular</h2>
+<p>El frontend consume los endpoints del API Gateway y utiliza el token JWT para diferenciar funcionalidades de administrador y cliente. El administrador puede gestionar clientes, productos, ventas y auditoria Saga. El cliente puede comprar mediante carrito usando Saga.</p>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-cba9341f-20ed-4e03-8e37-e95102397f4a.png"><div class="caption">Figura 19. Login de cliente.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-e477f53b-ff9c-4f8f-9230-bb34f47d3367.png"><div class="caption">Figura 20. Login de administrador.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-efb205e2-e76d-4bc7-8162-bf0a00e021f6.png"><div class="caption">Figura 21. Panel administrativo.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-e4075fac-1a8e-4496-9871-fe55a6ac85af.png"><div class="caption">Figura 22. Gestion de productos en frontend.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-014148e6-b21d-4e37-a764-b97e51d8be78.png"><div class="caption">Figura 23. Ventas globales en frontend.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-9ad65a07-77af-4f42-b08f-114289e01a3d.png"><div class="caption">Figura 24. Saga logs en frontend.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-09bfcc2f-78c3-44f5-89e1-33fe65874557.png"><div class="caption">Figura 25. Saga admin.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-eea299df-1ce3-4fcc-b359-9e80c40d7e59.png"><div class="caption">Figura 26. Tienda y carrito.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-a1455cd4-6339-4ea5-91cd-156e1ffb7ca9.png"><div class="caption">Figura 27. Historial de compras.</div></div>
+
+<h2>15. Repositorios Git</h2>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-c1678d88-d6ab-4300-ad1b-502308b90d50.png"><div class="caption">Figura 28. Repositorios GitHub del proyecto.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-b639cf3b-410d-414a-b9f5-92cb86047f89.png"><div class="caption">Figura 29. Repositorio frontend.</div></div>
+<div class="fig"><img src="file:///C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-7f1f9b1f-04c7-4b4c-8a85-bd1bc3f32acd.png"><div class="caption">Figura 30. Repositorio backend.</div></div>
+
+<h2>16. Manual Tecnico</h2>
+<h3>Requisitos</h3>
+<ul>
+  <li>Docker Desktop.</li>
+  <li>Java 17 o superior.</li>
+  <li>Maven.</li>
+  <li>Node.js 18 o superior.</li>
+  <li>Postman.</li>
+</ul>
+<h3>Ejecucion Backend</h3>
+<div class="code">docker compose up -d --build</div>
+<table>
+  <tr><th>Servicio</th><th>URL</th></tr>
+  <tr><td>API Gateway</td><td>http://localhost:8030</td></tr>
+  <tr><td>Consul</td><td>http://localhost:8500</td></tr>
+  <tr><td>ms-auth</td><td>http://localhost:8084</td></tr>
+  <tr><td>ms-cliente</td><td>http://localhost:8082</td></tr>
+  <tr><td>ms-producto</td><td>http://localhost:8080</td></tr>
+  <tr><td>ms-producto-2</td><td>http://localhost:8085</td></tr>
+  <tr><td>ms-ventas</td><td>http://localhost:8083</td></tr>
+</table>
+<h3>Ejecucion Frontend</h3>
+<div class="code">npm install
+npm start</div>
+
+<h2>17. Manual de Usuario</h2>
+<h3>Administrador</h3>
+<ol>
+  <li>Ingresar por el boton Admin.</li>
+  <li>Iniciar sesion con usuario administrador.</li>
+  <li>Revisar el resumen del panel.</li>
+  <li>Gestionar clientes y productos.</li>
+  <li>Consultar ventas y Saga logs.</li>
+  <li>Probar ventas Saga y compensacion desde Saga admin.</li>
+</ol>
+<h3>Cliente</h3>
+<ol>
+  <li>Crear cuenta o iniciar sesion.</li>
+  <li>Ver catalogo de productos.</li>
+  <li>Agregar productos al carrito.</li>
+  <li>Confirmar compra.</li>
+  <li>Revisar historial en Mis compras.</li>
+</ol>
+
+<h2>18. Guion Para Sustentacion</h2>
+<ol>
+  <li>Presentar el problema de consistencia en microservicios.</li>
+  <li>Mostrar arquitectura general y microservicios.</li>
+  <li>Mostrar Docker con contenedores activos.</li>
+  <li>Mostrar Consul con servicios registrados.</li>
+  <li>Explicar el API Gateway.</li>
+  <li>Mostrar login JWT.</li>
+  <li>Mostrar CRUD clientes y productos.</li>
+  <li>Explicar la decision de no eliminar clientes y proteger productos vendidos.</li>
+  <li>Mostrar venta Saga exitosa.</li>
+  <li>Mostrar errores por stock insuficiente y cliente inactivo.</li>
+  <li>Mostrar compensacion de stock.</li>
+  <li>Mostrar Saga logs.</li>
+  <li>Mostrar Circuit Breaker, Fallback y Timeout.</li>
+  <li>Mostrar frontend cliente y administrador.</li>
+  <li>Mostrar GitHub y README.</li>
+</ol>
+
+<h2>19. Conclusiones</h2>
+<p>El proyecto cumple con la implementacion de una arquitectura de microservicios en Quarkus, manteniendo servicios separados y comunicacion mediante REST Client. La incorporacion de Saga Orchestration permite manejar operaciones distribuidas de venta con compensacion de stock ante fallos.</p>
+<p>La solucion conserva la trazabilidad mediante Saga logs, protege operaciones con JWT, usa Consul para discovery, Docker para despliegue y Angular como interfaz final. Ademas, se aplicaron decisiones de integridad como no eliminar clientes y bloquear la eliminacion de productos que ya tienen ventas registradas.</p>
+
+</body>
+</html>
